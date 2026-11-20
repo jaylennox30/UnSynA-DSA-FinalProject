@@ -1,12 +1,9 @@
 
-package app;
-
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import model.User;
 import model.Student;
 import model.Administrator;
 import model.Facility;
@@ -29,7 +26,7 @@ public class CampuSport {
 
         loadSampleData();
 
-        int choice;
+        int choice = 0;
 
         do {
             System.out.println("\n==================================");
@@ -41,6 +38,7 @@ public class CampuSport {
             System.out.println("3. Sports Facilities");
             System.out.println("4. Reservations");
             System.out.println("5. Exit");
+            System.out.println("==================================");
             System.out.print("Enter choice: ");
 
             try {
@@ -75,7 +73,6 @@ public class CampuSport {
                 }
 
             } catch (NumberFormatException e) {
-                choice = 0;
                 System.out.println("Please enter a valid number.");
             }
 
@@ -84,6 +81,7 @@ public class CampuSport {
         sc.close();
     }
 
+    // Load sample records
     public static void loadSampleData() {
 
         students.add(new Student("2024-001", "Juan Dela Cruz"));
@@ -102,39 +100,50 @@ public class CampuSport {
             "F003", "Badminton Court", FacilityType.BADMINTON
         ));
 
-        reservations.add(new Reservation(
-            "R001", "2024-001", "F001",
+        Reservation sample = new Reservation(
+            "R001",
+            "2024-001",
+            "F001",
             LocalDate.now().plusDays(1),
             LocalTime.of(8, 0),
             LocalTime.of(10, 0)
-        ));
-
-        reservations.get(0).setStatus(
-            ReservationStatus.APPROVED
         );
+
+        sample.setStatus(ReservationStatus.APPROVED);
+        reservations.add(sample);
     }
 
+    // Display students
     public static void displayStudents() {
 
-        System.out.println("\n===== STUDENT LIST =====");
+        System.out.println("\n========== STUDENT LIST ==========");
 
         for (Student student : students) {
             student.displayStudent();
         }
     }
 
+    // Display administrator
+    public static void displayAdministrator() {
+
+        System.out.println("\n========== ADMINISTRATOR ==========");
+        admin.displayAdministrator();
+    }
+
+    // Display sports facilities
     public static void displayFacilities() {
 
-        System.out.println("\n===== SPORTS FACILITIES =====");
+        System.out.println("\n======= SPORTS FACILITIES =======");
 
         for (Facility facility : facilities) {
             facility.displayFacility();
         }
     }
 
+    // Display reservations
     public static void displayReservations() {
 
-        System.out.println("\n===== RESERVATION LIST =====");
+        System.out.println("\n======== RESERVATION LIST ========");
 
         for (Reservation reservation : reservations) {
             reservation.displayReservation();
