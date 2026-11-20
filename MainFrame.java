@@ -15,6 +15,7 @@ public class MainFrame extends JFrame {
     private ReservationManager manager;
 
     private DashboardPanel dashboard;
+    private AdminPanel adminPanel;
     private StudentPanel studentPanel;
 
     private DefaultTableModel facilityModel;
@@ -34,18 +35,22 @@ public class MainFrame extends JFrame {
 
         JTabbedPane tabs = new JTabbedPane();
 
-        // Dashboard Panel
+        // DASHBOARD PANEL
         dashboard = new DashboardPanel(manager);
         tabs.addTab("Dashboard", dashboard);
 
-        // Student Panel
+        // ADMIN PANEL
+        adminPanel = new AdminPanel(manager);
+        tabs.addTab("Admin", adminPanel);
+
+        // STUDENT PANEL
         studentPanel = new StudentPanel(manager);
         tabs.addTab("Students", studentPanel);
 
-        // Facility Panel
+        // FACILITY PANEL
         tabs.addTab("Facilities", createFacilityPanel());
 
-        // Reservation Panel
+        // RESERVATION PANEL
         tabs.addTab("Reservations", createReservationPanel());
 
         add(tabs);
@@ -74,7 +79,12 @@ public class MainFrame extends JFrame {
         };
 
         facilityTable = new JTable(facilityModel);
-        panel.add(new JScrollPane(facilityTable), BorderLayout.CENTER);
+        facilityTable.setRowHeight(25);
+
+        panel.add(
+            new JScrollPane(facilityTable),
+            BorderLayout.CENTER
+        );
 
         JButton refreshButton = new JButton("Refresh");
 
@@ -112,7 +122,12 @@ public class MainFrame extends JFrame {
         };
 
         reservationTable = new JTable(reservationModel);
-        panel.add(new JScrollPane(reservationTable), BorderLayout.CENTER);
+        reservationTable.setRowHeight(25);
+
+        panel.add(
+            new JScrollPane(reservationTable),
+            BorderLayout.CENTER
+        );
 
         JButton addButton = new JButton("Make Reservation");
         JButton approveButton = new JButton("Approve Next");
@@ -185,11 +200,14 @@ public class MainFrame extends JFrame {
                 boolean added = manager.addReservation(reservation);
 
                 if (added) {
+
                     JOptionPane.showMessageDialog(
                         this,
                         "Reservation submitted successfully!"
                     );
+
                 } else {
+
                     JOptionPane.showMessageDialog(
                         this,
                         "Unable to submit reservation. Please check the details."
@@ -225,7 +243,7 @@ public class MainFrame extends JFrame {
 
             JOptionPane.showMessageDialog(
                 this,
-                "No reservation was approved. Queue may be empty or the request may be invalid."
+                "No reservation was approved."
             );
         }
 
@@ -299,6 +317,7 @@ public class MainFrame extends JFrame {
         }
 
         if (results.isEmpty()) {
+
             JOptionPane.showMessageDialog(
                 this,
                 "No reservations found for this student."
@@ -320,7 +339,7 @@ public class MainFrame extends JFrame {
         );
     }
 
-    // ================= REFRESH TABLES =================
+    // ================= REFRESH ALL PANELS =================
 
     public void refreshTables() {
 
@@ -358,5 +377,8 @@ public class MainFrame extends JFrame {
 
         // Refresh Dashboard
         dashboard.refreshDashboard();
+
+        // Refresh Admin Panel
+        adminPanel.refreshPanel();
     }
 }
