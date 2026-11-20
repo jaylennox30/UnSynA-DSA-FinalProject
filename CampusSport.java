@@ -1,8 +1,5 @@
 
-import java.util.ArrayList;
-import java.util.Scanner;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import javax.swing.SwingUtilities;
 
 import model.Student;
 import model.Administrator;
@@ -11,95 +8,55 @@ import model.FacilityType;
 import model.Reservation;
 import model.ReservationStatus;
 
+import service.ReservationManager;
+import ui.MainFrame;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 public class CampuSport {
-
-    static Scanner sc = new Scanner(System.in);
-
-    static ArrayList<Student> students = new ArrayList<>();
-    static ArrayList<Facility> facilities = new ArrayList<>();
-    static ArrayList<Reservation> reservations = new ArrayList<>();
-
-    static Administrator admin =
-        new Administrator("ADMIN-001", "System Administrator");
 
     public static void main(String[] args) {
 
-        loadSampleData();
+        ReservationManager manager =
+            new ReservationManager(100);
 
-        int choice = 0;
+        // Sample students
+        manager.addStudent(
+            new Student("2024-001", "Juan Dela Cruz")
+        );
 
-        do {
-            System.out.println("\n==================================");
-            System.out.println("          CAMPUSPORT");
-            System.out.println(" SPORTS FACILITY RESERVATION SYSTEM");
-            System.out.println("==================================");
-            System.out.println("1. Student List");
-            System.out.println("2. Administrator");
-            System.out.println("3. Sports Facilities");
-            System.out.println("4. Reservations");
-            System.out.println("5. Exit");
-            System.out.println("==================================");
-            System.out.print("Enter choice: ");
+        manager.addStudent(
+            new Student("2024-002", "Maria Santos")
+        );
 
-            try {
-                choice = Integer.parseInt(sc.nextLine());
+        manager.addStudent(
+            new Student("2024-003", "Pedro Reyes")
+        );
 
-                switch (choice) {
+        // Sample facilities
+        manager.addFacility(
+            new Facility(
+                "F001", "Basketball Court",
+                FacilityType.BASKETBALL
+            )
+        );
 
-                    case 1:
-                        displayStudents();
-                        break;
+        manager.addFacility(
+            new Facility(
+                "F002", "Volleyball Court",
+                FacilityType.VOLLEYBALL
+            )
+        );
 
-                    case 2:
-                        admin.displayAdministrator();
-                        break;
+        manager.addFacility(
+            new Facility(
+                "F003", "Badminton Court",
+                FacilityType.BADMINTON
+            )
+        );
 
-                    case 3:
-                        displayFacilities();
-                        break;
-
-                    case 4:
-                        displayReservations();
-                        break;
-
-                    case 5:
-                        System.out.println(
-                            "Thank you for using CampuSport!"
-                        );
-                        break;
-
-                    default:
-                        System.out.println("Invalid choice!");
-                }
-
-            } catch (NumberFormatException e) {
-                System.out.println("Please enter a valid number.");
-            }
-
-        } while (choice != 5);
-
-        sc.close();
-    }
-
-    // Load sample records
-    public static void loadSampleData() {
-
-        students.add(new Student("2024-001", "Juan Dela Cruz"));
-        students.add(new Student("2024-002", "Maria Santos"));
-        students.add(new Student("2024-003", "Pedro Reyes"));
-
-        facilities.add(new Facility(
-            "F001", "Basketball Court", FacilityType.BASKETBALL
-        ));
-
-        facilities.add(new Facility(
-            "F002", "Volleyball Court", FacilityType.VOLLEYBALL
-        ));
-
-        facilities.add(new Facility(
-            "F003", "Badminton Court", FacilityType.BADMINTON
-        ));
-
+        // Sample reservation
         Reservation sample = new Reservation(
             "R001",
             "2024-001",
@@ -109,44 +66,12 @@ public class CampuSport {
             LocalTime.of(10, 0)
         );
 
+        manager.addReservation(sample);
         sample.setStatus(ReservationStatus.APPROVED);
-        reservations.add(sample);
-    }
 
-    // Display students
-    public static void displayStudents() {
-
-        System.out.println("\n========== STUDENT LIST ==========");
-
-        for (Student student : students) {
-            student.displayStudent();
-        }
-    }
-
-    // Display administrator
-    public static void displayAdministrator() {
-
-        System.out.println("\n========== ADMINISTRATOR ==========");
-        admin.displayAdministrator();
-    }
-
-    // Display sports facilities
-    public static void displayFacilities() {
-
-        System.out.println("\n======= SPORTS FACILITIES =======");
-
-        for (Facility facility : facilities) {
-            facility.displayFacility();
-        }
-    }
-
-    // Display reservations
-    public static void displayReservations() {
-
-        System.out.println("\n======== RESERVATION LIST ========");
-
-        for (Reservation reservation : reservations) {
-            reservation.displayReservation();
-        }
+        // Launch application
+        SwingUtilities.invokeLater(() -> {
+            new MainFrame(manager).setVisible(true);
+        });
     }
 }
