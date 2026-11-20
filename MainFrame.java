@@ -1,25 +1,25 @@
 
 package ui;
 
+import model.*;
+import service.ReservationManager;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-
-import model.Student;
-import model.Facility;
-import model.Reservation;
-import service.ReservationManager;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class MainFrame extends JFrame {
 
     private ReservationManager manager;
-    private DashboardPanel dashboard;
 
-    private DefaultTableModel studentModel;
+    private DashboardPanel dashboard;
+    private StudentPanel studentPanel;
+
     private DefaultTableModel facilityModel;
     private DefaultTableModel reservationModel;
 
-    private JTable studentTable;
     private JTable facilityTable;
     private JTable reservationTable;
 
@@ -27,24 +27,25 @@ public class MainFrame extends JFrame {
 
         this.manager = manager;
 
-        setTitle("CampuSport - Sports Reservation System");
+        setTitle("CampuSport - Sports Facility Reservation System");
         setSize(1100, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        getContentPane().setBackground(
-            new Color(245, 247, 250)
-        );
-
-        // Main tabs
         JTabbedPane tabs = new JTabbedPane();
 
-        // Updated DashboardPanel connection
+        // Dashboard Panel
         dashboard = new DashboardPanel(manager);
-
         tabs.addTab("Dashboard", dashboard);
-        tabs.addTab("Students", createStudentPanel());
+
+        // Student Panel
+        studentPanel = new StudentPanel(manager);
+        tabs.addTab("Students", studentPanel);
+
+        // Facility Panel
         tabs.addTab("Facilities", createFacilityPanel());
+
+        // Reservation Panel
         tabs.addTab("Reservations", createReservationPanel());
 
         add(tabs);
@@ -52,56 +53,20 @@ public class MainFrame extends JFrame {
         refreshTables();
     }
 
-    // Student Panel
-    private JPanel createStudentPanel() {
+    // ================= FACILITY PANEL =================
 
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        );
-
-        studentModel = new DefaultTableModel(
-            new String[]{"Student ID", "Full Name", "Role"}, 0
-        ) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        studentTable = new JTable(studentModel);
-        studentTable.setRowHeight(28);
-
-        JButton refresh = new JButton("Refresh");
-
-        refresh.addActionListener(e -> {
-            refreshStudents();
-        });
-
-        panel.add(
-            new JScrollPane(studentTable),
-            BorderLayout.CENTER
-        );
-
-        panel.add(refresh, BorderLayout.SOUTH);
-
-        return panel;
-    }
-
-    // Facility Panel
     private JPanel createFacilityPanel() {
 
         JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        );
 
-        facilityModel = new DefaultTableModel(
-            new String[]{
-                "Facility ID", "Facility Name",
-                "Type", "Status"
-            }, 0
-        ) {
+        String[] columns = {
+            "Facility ID",
+            "Facility Name",
+            "Facility Type",
+            "Status"
+        };
+
+        facilityModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -109,43 +74,37 @@ public class MainFrame extends JFrame {
         };
 
         facilityTable = new JTable(facilityModel);
-        facilityTable.setRowHeight(28);
+        panel.add(new JScrollPane(facilityTable), BorderLayout.CENTER);
 
-        JButton refresh = new JButton("Refresh");
+        JButton refreshButton = new JButton("Refresh");
 
-        refresh.addActionListener(e -> {
-            refreshFacilities();
-        });
+        refreshButton.addActionListener(e -> refreshTables());
 
-        panel.add(
-            new JScrollPane(facilityTable),
-            BorderLayout.CENTER
-        );
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(refreshButton);
 
-        panel.add(refresh, BorderLayout.SOUTH);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
 
         return panel;
     }
 
-    // Reservation Panel
+    // ================= RESERVATION PANEL =================
+
     private JPanel createReservationPanel() {
 
         JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBorder(
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        );
 
-        reservationModel = new DefaultTableModel(
-            new String[]{
-                "Reservation ID",
-                "Student ID",
-                "Facility ID",
-                "Date",
-                "Start Time",
-                "End Time",
-                "Status"
-            }, 0
-        ) {
+        String[] columns = {
+            "Reservation ID",
+            "Student ID",
+            "Facility ID",
+            "Date",
+            "Start Time",
+            "End Time",
+            "Status"
+        };
+
+        reservationModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -153,215 +112,222 @@ public class MainFrame extends JFrame {
         };
 
         reservationTable = new JTable(reservationModel);
-        reservationTable.setRowHeight(28);
+        panel.add(new JScrollPane(reservationTable), BorderLayout.CENTER);
 
-        JButton add = new JButton("Make Reservation");
-        JButton approve = new JButton("Approve Next");
-        JButton cancel = new JButton("Cancel");
-        JButton search = new JButton("Search");
-        JButton sort = new JButton("Sort by Date");
-        JButton refresh = new JButton("Refresh");
+        JButton addButton = new JButton("Make Reservation");
+        JButton approveButton = new JButton("Approve Next");
+        JButton cancelButton = new JButton("Cancel Reservation");
+        JButton searchButton = new JButton("Search by Student");
+        JButton sortButton = new JButton("Sort by Date");
+        JButton refreshButton = new JButton("Refresh");
 
-        add.addActionListener(e -> addReservation());
-        approve.addActionListener(e -> approveReservation());
-        cancel.addActionListener(e -> cancelReservation());
-        search.addActionListener(e -> searchReservation());
+        addButton.addActionListener(e -> addReservation());
+        approveButton.addActionListener(e -> approveNextReservation());
+        cancelButton.addActionListener(e -> cancelReservation());
+        searchButton.addActionListener(e -> searchReservation());
+        sortButton.addActionListener(e -> sortReservations());
+        refreshButton.addActionListener(e -> refreshTables());
 
-        sort.addActionListener(e -> {
-            manager.sortByDate();
-            refreshTables();
-        });
+        JPanel buttonPanel = new JPanel(new FlowLayout());
 
-        refresh.addActionListener(e -> refreshTables());
+        buttonPanel.add(addButton);
+        buttonPanel.add(approveButton);
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(searchButton);
+        buttonPanel.add(sortButton);
+        buttonPanel.add(refreshButton);
 
-        JPanel buttons = new JPanel(
-            new FlowLayout(FlowLayout.LEFT)
-        );
-
-        buttons.add(add);
-        buttons.add(approve);
-        buttons.add(cancel);
-        buttons.add(search);
-        buttons.add(sort);
-        buttons.add(refresh);
-
-        panel.add(
-            new JScrollPane(reservationTable),
-            BorderLayout.CENTER
-        );
-
-        panel.add(buttons, BorderLayout.SOUTH);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
 
         return panel;
     }
 
-    // Add Reservation
+    // ================= ADD RESERVATION =================
+
     private void addReservation() {
 
-        try {
+        JTextField idField = new JTextField();
+        JTextField studentField = new JTextField();
+        JTextField facilityField = new JTextField();
+        JTextField dateField = new JTextField();
+        JTextField startField = new JTextField();
+        JTextField endField = new JTextField();
 
-            String id = JOptionPane.showInputDialog(
-                this, "Reservation ID:"
-            );
+        Object[] fields = {
+            "Reservation ID:", idField,
+            "Student ID:", studentField,
+            "Facility ID:", facilityField,
+            "Date (YYYY-MM-DD):", dateField,
+            "Start Time (HH:MM):", startField,
+            "End Time (HH:MM):", endField
+        };
 
-            if (id == null) return;
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            fields,
+            "Make Reservation",
+            JOptionPane.OK_CANCEL_OPTION
+        );
 
-            String studentId = JOptionPane.showInputDialog(
-                this, "Student ID:"
-            );
+        if (result == JOptionPane.OK_OPTION) {
 
-            if (studentId == null) return;
+            try {
 
-            String facilityId = JOptionPane.showInputDialog(
-                this, "Facility ID:"
-            );
-
-            if (facilityId == null) return;
-
-            String date = JOptionPane.showInputDialog(
-                this, "Date (YYYY-MM-DD):"
-            );
-
-            if (date == null) return;
-
-            String start = JOptionPane.showInputDialog(
-                this, "Start Time (HH:MM):"
-            );
-
-            if (start == null) return;
-
-            String end = JOptionPane.showInputDialog(
-                this, "End Time (HH:MM):"
-            );
-
-            if (end == null) return;
-
-            Reservation reservation = new Reservation(
-                id,
-                studentId,
-                facilityId,
-                java.time.LocalDate.parse(date),
-                java.time.LocalTime.parse(start),
-                java.time.LocalTime.parse(end)
-            );
-
-            if (manager.addReservation(reservation)) {
-
-                JOptionPane.showMessageDialog(
-                    this, "Reservation submitted successfully!"
+                Reservation reservation = new Reservation(
+                    idField.getText().trim(),
+                    studentField.getText().trim(),
+                    facilityField.getText().trim(),
+                    LocalDate.parse(dateField.getText().trim()),
+                    LocalTime.parse(startField.getText().trim()),
+                    LocalTime.parse(endField.getText().trim())
                 );
 
-            } else {
+                boolean added = manager.addReservation(reservation);
+
+                if (added) {
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "Reservation submitted successfully!"
+                    );
+                } else {
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "Unable to submit reservation. Please check the details."
+                    );
+                }
+
+                refreshTables();
+
+            } catch (Exception ex) {
 
                 JOptionPane.showMessageDialog(
-                    this, "Reservation could not be submitted."
+                    this,
+                    "Invalid input. Please check your date and time format."
                 );
             }
-
-            refreshTables();
-
-        } catch (Exception ex) {
-
-            JOptionPane.showMessageDialog(
-                this, "Invalid reservation details!"
-            );
         }
     }
 
-    // Approve Reservation
-    private void approveReservation() {
+    // ================= APPROVE RESERVATION =================
 
-        Reservation reservation =
-            manager.approveNextReservation();
+    private void approveNextReservation() {
 
-        if (reservation == null) {
+        Reservation approved = manager.approveNextReservation();
+
+        if (approved != null) {
 
             JOptionPane.showMessageDialog(
-                this, "No reservation was approved."
+                this,
+                "Reservation approved successfully!"
             );
 
         } else {
 
             JOptionPane.showMessageDialog(
                 this,
-                "Reservation " +
-                reservation.getReservationId() +
-                " approved successfully!"
+                "No reservation was approved. Queue may be empty or the request may be invalid."
             );
         }
 
         refreshTables();
     }
 
-    // Cancel Reservation
+    // ================= CANCEL RESERVATION =================
+
     private void cancelReservation() {
 
-        String id = JOptionPane.showInputDialog(
-            this, "Enter Reservation ID:"
+        String reservationId = JOptionPane.showInputDialog(
+            this,
+            "Enter Reservation ID to cancel:"
         );
 
-        if (id == null || id.trim().isEmpty()) return;
+        if (reservationId == null || reservationId.trim().isEmpty()) {
+            return;
+        }
 
-        if (manager.cancelReservation(id)) {
+        boolean cancelled = manager.cancelReservation(
+            reservationId.trim()
+        );
+
+        if (cancelled) {
 
             JOptionPane.showMessageDialog(
-                this, "Reservation cancelled successfully!"
+                this,
+                "Reservation cancelled successfully!"
             );
 
         } else {
 
             JOptionPane.showMessageDialog(
-                this, "Reservation not found or already cancelled."
+                this,
+                "Reservation not found or cannot be cancelled."
             );
         }
 
         refreshTables();
     }
 
-    // Search Reservation
+    // ================= SEARCH RESERVATION =================
+
     private void searchReservation() {
 
-        String id = JOptionPane.showInputDialog(
-            this, "Enter Student ID:"
+        String studentId = JOptionPane.showInputDialog(
+            this,
+            "Enter Student ID:"
         );
 
-        if (id == null) return;
+        if (studentId == null || studentId.trim().isEmpty()) {
+            return;
+        }
+
+        java.util.List<Reservation> results =
+            manager.searchByStudent(studentId.trim());
 
         reservationModel.setRowCount(0);
 
-        for (Reservation r : manager.searchByStudent(id)) {
-            addReservationRow(r);
-        }
-    }
+        for (Reservation r : results) {
 
-    // Refresh All Tables and Dashboard
-    private void refreshTables() {
-
-        refreshStudents();
-        refreshFacilities();
-        refreshReservations();
-
-        dashboard.refreshDashboard();
-    }
-
-    // Refresh Students
-    private void refreshStudents() {
-
-        studentModel.setRowCount(0);
-
-        for (Student s : manager.getStudents()) {
-
-            studentModel.addRow(new Object[]{
-                s.getUserId(),
-                s.getFullName(),
-                s.getRole()
+            reservationModel.addRow(new Object[]{
+                r.getReservationId(),
+                r.getStudentId(),
+                r.getFacilityId(),
+                r.getDate(),
+                r.getStartTime(),
+                r.getEndTime(),
+                r.getStatus()
             });
         }
+
+        if (results.isEmpty()) {
+            JOptionPane.showMessageDialog(
+                this,
+                "No reservations found for this student."
+            );
+        }
     }
 
-    // Refresh Facilities
-    private void refreshFacilities() {
+    // ================= SORT RESERVATIONS =================
 
+    private void sortReservations() {
+
+        manager.sortByDate();
+
+        refreshTables();
+
+        JOptionPane.showMessageDialog(
+            this,
+            "Reservations sorted by date successfully!"
+        );
+    }
+
+    // ================= REFRESH TABLES =================
+
+    public void refreshTables() {
+
+        // Refresh Student Panel
+        studentPanel.refreshStudents();
+
+        // Refresh Facility Table
         facilityModel.setRowCount(0);
 
         for (Facility f : manager.getFacilities()) {
@@ -370,32 +336,27 @@ public class MainFrame extends JFrame {
                 f.getFacilityId(),
                 f.getFacilityName(),
                 f.getFacilityType(),
-                f.isActive() ? "Available" : "Inactive"
+                f.isActive() ? "Active" : "Inactive"
             });
         }
-    }
 
-    // Refresh Reservations
-    private void refreshReservations() {
-
+        // Refresh Reservation Table
         reservationModel.setRowCount(0);
 
         for (Reservation r : manager.getReservations()) {
-            addReservationRow(r);
+
+            reservationModel.addRow(new Object[]{
+                r.getReservationId(),
+                r.getStudentId(),
+                r.getFacilityId(),
+                r.getDate(),
+                r.getStartTime(),
+                r.getEndTime(),
+                r.getStatus()
+            });
         }
-    }
 
-    // Add Reservation to Table
-    private void addReservationRow(Reservation r) {
-
-        reservationModel.addRow(new Object[]{
-            r.getReservationId(),
-            r.getStudentId(),
-            r.getFacilityId(),
-            r.getDate(),
-            r.getStartTime(),
-            r.getEndTime(),
-            r.getStatus()
-        });
+        // Refresh Dashboard
+        dashboard.refreshDashboard();
     }
 }
