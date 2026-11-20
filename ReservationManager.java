@@ -211,6 +211,25 @@ public class ReservationManager {
         return true;
     }
 
+public boolean removeStudent(String studentId) {
+
+    Student student = findStudent(studentId);
+
+    if (student == null) {
+        return false;
+    }
+
+    for (Reservation reservation : reservations) {
+
+        if (reservation.getStudentId().equalsIgnoreCase(studentId)) {
+            return false;
+        }
+    }
+
+    students.remove(student);
+    return true;
+}
+
     // Sort reservations by date and time using insertion sort
     public void sortByDate() {
 
