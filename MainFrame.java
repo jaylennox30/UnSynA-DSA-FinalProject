@@ -17,11 +17,9 @@ public class MainFrame extends JFrame {
     private DashboardPanel dashboard;
     private AdminPanel adminPanel;
     private StudentPanel studentPanel;
+    private FacilityPanel facilityPanel;
 
-    private DefaultTableModel facilityModel;
     private DefaultTableModel reservationModel;
-
-    private JTable facilityTable;
     private JTable reservationTable;
 
     public MainFrame(ReservationManager manager) {
@@ -48,7 +46,8 @@ public class MainFrame extends JFrame {
         tabs.addTab("Students", studentPanel);
 
         // FACILITY PANEL
-        tabs.addTab("Facilities", createFacilityPanel());
+        facilityPanel = new FacilityPanel(manager);
+        tabs.addTab("Facilities", facilityPanel);
 
         // RESERVATION PANEL
         tabs.addTab("Reservations", createReservationPanel());
@@ -56,46 +55,6 @@ public class MainFrame extends JFrame {
         add(tabs);
 
         refreshTables();
-    }
-
-    // ================= FACILITY PANEL =================
-
-    private JPanel createFacilityPanel() {
-
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-
-        String[] columns = {
-            "Facility ID",
-            "Facility Name",
-            "Facility Type",
-            "Status"
-        };
-
-        facilityModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        facilityTable = new JTable(facilityModel);
-        facilityTable.setRowHeight(25);
-
-        panel.add(
-            new JScrollPane(facilityTable),
-            BorderLayout.CENTER
-        );
-
-        JButton refreshButton = new JButton("Refresh");
-
-        refreshButton.addActionListener(e -> refreshTables());
-
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.add(refreshButton);
-
-        panel.add(buttonPanel, BorderLayout.SOUTH);
-
-        return panel;
     }
 
     // ================= RESERVATION PANEL =================
@@ -129,6 +88,7 @@ public class MainFrame extends JFrame {
             BorderLayout.CENTER
         );
 
+        // BUTTONS
         JButton addButton = new JButton("Make Reservation");
         JButton approveButton = new JButton("Approve Next");
         JButton cancelButton = new JButton("Cancel Reservation");
@@ -343,23 +303,13 @@ public class MainFrame extends JFrame {
 
     public void refreshTables() {
 
-        // Refresh Student Panel
+        // STUDENT PANEL
         studentPanel.refreshStudents();
 
-        // Refresh Facility Table
-        facilityModel.setRowCount(0);
+        // FACILITY PANEL
+        facilityPanel.refreshFacilities();
 
-        for (Facility f : manager.getFacilities()) {
-
-            facilityModel.addRow(new Object[]{
-                f.getFacilityId(),
-                f.getFacilityName(),
-                f.getFacilityType(),
-                f.isActive() ? "Active" : "Inactive"
-            });
-        }
-
-        // Refresh Reservation Table
+        // RESERVATION TABLE
         reservationModel.setRowCount(0);
 
         for (Reservation r : manager.getReservations()) {
@@ -375,10 +325,10 @@ public class MainFrame extends JFrame {
             });
         }
 
-        // Refresh Dashboard
+        // DASHBOARD PANEL
         dashboard.refreshDashboard();
 
-        // Refresh Admin Panel
+        // ADMIN PANEL
         adminPanel.refreshPanel();
     }
 }
