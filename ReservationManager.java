@@ -154,17 +154,21 @@ public class ReservationManager {
     // Cancel reservation
     public boolean cancelReservation(String reservationId) {
 
-        Reservation reservation = findReservation(reservationId);
+    Reservation reservation = findReservation(reservationId);
 
-        if (reservation == null
-                || reservation.getStatus() == ReservationStatus.CANCELLED) {
-            return false;
-        }
-
-        reservation.setStatus(ReservationStatus.CANCELLED);
-        return true;
+    if (reservation == null
+            || reservation.getStatus() == ReservationStatus.CANCELLED) {
+        return false;
     }
 
+    if (reservation.getStatus() == ReservationStatus.PENDING) {
+        pendingQueue.removeReservation(reservationId);
+    }
+
+    reservation.setStatus(ReservationStatus.CANCELLED);
+
+    return true;
+}
     // Update reservation schedule
     public boolean updateReservation(
             String reservationId,
